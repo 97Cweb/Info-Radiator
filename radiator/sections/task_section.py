@@ -7,7 +7,7 @@ from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QWidget
 
 from radiator.models import TaskItem
-from radiator.sections.refreshable_section import DataSection
+from radiator.sections.data_section import DataSection
 from radiator.sources.task_source import TaskSource
 from radiator.widgets.task_card import TaskCard
 
@@ -56,6 +56,7 @@ class TaskSection(DataSection):
             title="TASKS",
             refresh_interval_ms=5 * 60 * 1000,
             parent=parent,
+            scrollable=True,
         )
 
         self.source = source

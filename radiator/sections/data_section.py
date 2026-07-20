@@ -15,7 +15,7 @@ from PySide6.QtCore import (
 )
 from PySide6.QtWidgets import QLabel, QWidget
 
-from radiator.widgets.section import SectionWidget
+from radiator.sections.base_section import SectionWidget
 
 
 class RefreshWorkerSignals(QObject):
@@ -63,8 +63,9 @@ class DataSection(SectionWidget):
         title: str,
         refresh_interval_ms: int,
         parent: QWidget | None = None,
+        scrollable: bool = False,
     ) -> None:
-        super().__init__(title, parent)
+        super().__init__(title, parent, scrollable=scrollable)
 
         self.refresh_interval_ms = refresh_interval_ms
         self._refresh_in_progress = False

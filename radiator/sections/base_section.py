@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QPushButton,
+    QScrollArea,
     QSizePolicy,
     QVBoxLayout,
     QWidget,
@@ -16,11 +17,24 @@ from PySide6.QtWidgets import (
 
 
 class SectionWidget(QFrame):
-    def __init__(self, title: str, parent: QWidget | None = None) -> None:
+    def __init__(
+        self, title: str, parent: QWidget | None = None, scrollable: bool = False
+    ) -> None:
         super().__init__(parent)
 
         self.setObjectName("section")
-        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
+
+        if scrollable:
+            self.setSizePolicy(
+                QSizePolicy.Policy.Expanding,
+                QSizePolicy.Policy.Expanding,
+            )
+            self.setMinimumHeight(180)
+        else:
+            self.setSizePolicy(
+                QSizePolicy.Policy.Expanding,
+                QSizePolicy.Policy.Maximum,
+            )
         self._layout = QVBoxLayout(self)
         self._layout.setContentsMargins(10, 8, 10, 10)
         self._layout.setSpacing(6)
@@ -41,20 +55,37 @@ class SectionWidget(QFrame):
 
         self._layout.addLayout(self._header_layout)
 
-        self._content = QVBoxLayout()
+        self._content_widget = QWidget()
+
+        self._content = QVBoxLayout(self._content_widget)
         self._content.setContentsMargins(0, 0, 0, 0)
         self._content.setSpacing(6)
+        self._content.addStretch()
 
-        self._layout.addLayout(self._content)
+        if scrollable:
+            self._scroll = QScrollArea()
+            self._scroll.setWidgetResizable(True)
+            self._scroll.setHorizontalScrollBarPolicy(
+                Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+            )
+            self._scroll.setFrameShape(QFrame.Shape.NoFrame)
+            self._scroll.setWidget(self._content_widget)
+
+            self._layout.addWidget(self._scroll)
+        else:
+            self._layout.addWidget(self._content_widget)
 
     def set_status(self, text: str) -> None:
         self.status_label.setText(text)
 
     def add_item(self, widget: QWidget) -> None:
-        self._content.addWidget(widget)
+        self._content.insertWidget(
+            self._content.count() - 1,
+            widget,
+        )
 
     def clear_items(self) -> None:
-        while self._content.count():
+        while self._content.count() > 1:
             item = self._content.takeAt(0)
             widget = item.widget()
 

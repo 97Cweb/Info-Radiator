@@ -15,6 +15,7 @@ TOKEN_PATH = PROJECT_ROOT / "token.json"
 GOOGLE_SCOPES = [
     "https://www.googleapis.com/auth/calendar.readonly",
     "https://www.googleapis.com/auth/tasks",
+    "https://www.googleapis.com/auth/gmail.readonly",
 ]
 
 

@@ -8,7 +8,7 @@ from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QLabel, QWidget
 
 from radiator.models import CalendarItem
-from radiator.sections.refreshable_section import DataSection
+from radiator.sections.data_section import DataSection
 from radiator.sources.calendar_source import CalendarSource
 from radiator.widgets.calendar_card import CalendarCard
 

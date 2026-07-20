@@ -24,13 +24,16 @@ class TaskItem:
     completed: bool = False
     task_list_id: str | None = None
     parent_id: str | None = None
+    position: str = ""
 
 
 @dataclass(slots=True)
 class EmailItem:
+    id: str
+    thread_id: str
     sender: str
     subject: str
     snippet: str
-    received: datetime
+    received_at: datetime
     unread: bool = False
     url: str | None = None

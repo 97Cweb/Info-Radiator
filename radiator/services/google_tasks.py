@@ -59,14 +59,14 @@ def get_incomplete_tasks(
                         url=task.get("webViewLink"),
                         completed=task.get("status") == "completed",
                         parent_id=task.get("parent"),
+                        position=task.get("position", ""),
                     )
                 )
 
         tasks.sort(
             key=lambda task: (
-                task.due is None,
-                task.due or datetime.max,
-                task.title.casefold(),
+                task.task_list_id or "",
+                task.position,
             )
         )
 

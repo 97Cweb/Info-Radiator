@@ -16,16 +16,14 @@ from PySide6.QtWidgets import (
     QMessageBox,
 )
 
-from radiator.sample_data import sample_emails
 
 from radiator.sources.google_calendar_source import GoogleCalendarSource
 from radiator.sources.google_task_source import GoogleTaskSource
+from radiator.sources.google_email_source import GoogleEmailSource
 
 from radiator.sections.calendar_section import CalendarSection
 from radiator.sections.task_section import TaskSection
-
-from radiator.widgets.email_card import EmailCard
-from radiator.widgets.section import SectionWidget
+from radiator.sections.email_section import EmailSection
 
 
 class RadiatorWindow(QMainWindow):
@@ -44,10 +42,6 @@ class RadiatorWindow(QMainWindow):
         self._start_clock()
 
     def _build_ui(self) -> None:
-        scroll_area = QScrollArea()
-        scroll_area.setWidgetResizable(True)
-        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        scroll_area.setFrameShape(QFrame.Shape.NoFrame)
 
         content = QWidget()
         content.setObjectName("content")
@@ -64,18 +58,18 @@ class RadiatorWindow(QMainWindow):
         task_source = GoogleTaskSource()
         self.task_section = TaskSection(task_source)
 
-        self.email_section = SectionWidget("EMAIL")
+        email_source = GoogleEmailSource()
+        self.email_section = EmailSection(source=email_source)
 
         self.content_layout.addWidget(self.calendar_section)
         self.content_layout.addWidget(self.task_section)
-        self.content_layout.addWidget(self.email_section)
-        self.content_layout.addStretch(1)
+        self.content_layout.addWidget(self.email_section, 1)
 
-        scroll_area.setWidget(content)
-        self.setCentralWidget(scroll_area)
+        self.setCentralWidget(content)
 
         self.calendar_section.start_auto_refresh(immediate=True)
         self.task_section.start_auto_refresh(immediate=True)
+        self.email_section.start_auto_refresh(immediate=True)
 
     def _build_header(self) -> None:
         header = QFrame()
@@ -122,7 +116,7 @@ class RadiatorWindow(QMainWindow):
     def refresh_data(self) -> None:
         self.calendar_section.refresh()
         self.task_section.refresh()
-        self._load_email()
+        self.email_section.refresh()
 
     def _calendar_day_heading(self, event_date: date) -> str:
         today = date.today()
@@ -141,12 +135,6 @@ class RadiatorWindow(QMainWindow):
             return f"NEXT {event_date.strftime('%A').upper()}"
 
         return event_date.strftime("%A, %B %-d").upper()
-
-    def _load_email(self) -> None:
-        self.email_section.clear_items()
-
-        for item in sample_emails():
-            self.email_section.add_item(EmailCard(item))
 
     def _apply_styles(self) -> None:
         self.setStyleSheet(

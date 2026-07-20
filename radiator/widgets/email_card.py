@@ -39,7 +39,7 @@ class EmailCard(QFrame):
         snippet.setMaximumHeight(42)
         layout.addWidget(snippet)
 
-        received = QLabel(item.received.strftime("%-I:%M %p"))
+        received = QLabel(item.received_at.strftime("%-I:%M %p"))
         received.setObjectName("timestamp")
         layout.addWidget(received)
 
