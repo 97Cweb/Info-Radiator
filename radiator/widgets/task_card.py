@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-from PySide6.QtCore import QUrl, Signal
+from collections.abc import Callable
+
+from PySide6.QtCore import Qt, QUrl, Signal
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (
     QCheckBox,
     QFrame,
     QHBoxLayout,
     QLabel,
-    QPushButton,
     QVBoxLayout,
     QWidget,
 )
@@ -16,63 +17,74 @@ from radiator.models import TaskItem
 
 
 class TaskCard(QFrame):
-    completion_changed = Signal(str, bool)
+    completion_requested = Signal(object)
 
     def __init__(
         self,
-        item: TaskItem,
+        task: TaskItem,
+        indent_level: int = 0,
         parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
 
-        self.item = item
-        self.setObjectName("card")
+        self.task = task
+        self.setObjectName("taskCard")
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
 
-        outer_layout = QHBoxLayout(self)
-        outer_layout.setContentsMargins(7, 7, 7, 7)
-        outer_layout.setSpacing(7)
+        main_layout = QHBoxLayout(self)
+        left_margin = 8 + indent_level * 18
+        main_layout.setContentsMargins(left_margin, 7, 8, 7)
+        main_layout.setSpacing(8)
+
+        if indent_level > 0:
+            branch_label = QLabel("↳")
+            branch_label.setObjectName("subtaskMarker")
+
+            main_layout.addWidget(
+                branch_label,
+                alignment=Qt.AlignmentFlag.AlignTop,
+            )
 
         self.checkbox = QCheckBox()
-        self.checkbox.setChecked(item.completed)
-        self.checkbox.toggled.connect(self._completion_toggled)
-        outer_layout.addWidget(self.checkbox)
+        self.checkbox.setChecked(task.completed)
+        self.checkbox.setToolTip("Mark task complete")
+
+        self.checkbox.clicked.connect(self._completion_clicked)
+
+        main_layout.addWidget(self.checkbox, alignment=Qt.AlignmentFlag.AlignTop)
 
         text_layout = QVBoxLayout()
         text_layout.setContentsMargins(0, 0, 0, 0)
         text_layout.setSpacing(2)
 
-        self.title_label = QLabel(item.title)
-        self.title_label.setObjectName("cardTitle")
-        self.title_label.setWordWrap(True)
-        text_layout.addWidget(self.title_label)
+        title_label = QLabel(task.title)
+        title_label.setObjectName("taskTitle")
+        title_label.setWordWrap(True)
+        text_layout.addWidget(title_label)
 
-        if item.due:
-            due_label = QLabel(f"Due {item.due.strftime('%a %-I:%M %p')}")
+        if task.due is not None:
+            due_label = QLabel(task.due.strftime("Due %A, %B %-d"))
             due_label.setObjectName("secondaryText")
             text_layout.addWidget(due_label)
 
-        outer_layout.addLayout(text_layout, 1)
+        if task.notes:
+            notes_label = QLabel(task.notes)
+            notes_label.setObjectName("secondaryText")
+            notes_label.setWordWrap(True)
+            text_layout.addWidget(notes_label)
 
-        if item.url:
-            open_button = QPushButton("↗")
-            open_button.setObjectName("iconButton")
-            open_button.setToolTip("Open in Google Tasks")
-            open_button.clicked.connect(self._open_task)
-            outer_layout.addWidget(open_button)
+        main_layout.addLayout(text_layout, 1)
 
-        self._update_completed_style()
+    def _completion_clicked(self, checked: bool) -> None:
+        if not checked:
+            return
+        self.checkbox.setEnabled(False)
+        self.completion_requested.emit(self.task)
 
-    def _completion_toggled(self, completed: bool) -> None:
-        self.item.completed = completed
-        self._update_completed_style()
-        self.completion_changed.emit(self.item.task_id, completed)
+    def mousePressEvent(self, event) -> None:
+        if event.button() == Qt.MouseButton.LeftButton and self.task.url:
+            QDesktopServices.openUrl(QUrl(self.task.url))
+            event.accept()
+            return
 
-    def _update_completed_style(self) -> None:
-        self.title_label.setProperty("completed", self.item.completed)
-
-        self.title_label.style().unpolish(self.title_label)
-        self.title_label.style().polish(self.title_label)
-
-    def _open_task(self) -> None:
-        if self.item.url:
-            QDesktopServices.openUrl(QUrl(self.item.url))
+        super().mousePressEvent(event)

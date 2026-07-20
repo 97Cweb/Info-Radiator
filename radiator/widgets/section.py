@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+from collections.abc import Callable
+
+from PySide6.QtCore import Qt
+
 from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
     QLabel,
+    QPushButton,
     QSizePolicy,
     QVBoxLayout,
     QWidget,
@@ -20,9 +25,9 @@ class SectionWidget(QFrame):
         self._layout.setContentsMargins(10, 8, 10, 10)
         self._layout.setSpacing(6)
 
-        header_layout = QHBoxLayout()
-        header_layout.setContentsMargins(0, 0, 0, 0)
-        header_layout.setSpacing(6)
+        self._header_layout = QHBoxLayout()
+        self._header_layout.setContentsMargins(0, 0, 0, 0)
+        self._header_layout.setSpacing(6)
 
         self.title_label = QLabel(title)
         self.title_label.setObjectName("sectionTitle")
@@ -30,11 +35,11 @@ class SectionWidget(QFrame):
         self.status_label = QLabel("")
         self.status_label.setObjectName("sectionStatus")
 
-        header_layout.addWidget(self.title_label)
-        header_layout.addStretch(1)
-        header_layout.addWidget(self.status_label)
+        self._header_layout.addWidget(self.title_label)
+        self._header_layout.addStretch(1)
+        self._header_layout.addWidget(self.status_label)
 
-        self._layout.addLayout(header_layout)
+        self._layout.addLayout(self._header_layout)
 
         self._content = QVBoxLayout()
         self._content.setContentsMargins(0, 0, 0, 0)
@@ -55,3 +60,21 @@ class SectionWidget(QFrame):
 
             if widget is not None:
                 widget.deleteLater()
+
+    def add_header_button(
+        self,
+        text: str,
+        callback: Callable[[], None],
+        tooltip: str | None = None,
+    ) -> QPushButton:
+        button = QPushButton(text)
+        button.setObjectName("sectionActionButton")
+        button.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        if tooltip:
+            button.setToolTip(tooltip)
+
+        button.clicked.connect(callback)
+
+        index = self._header_layout.indexOf(self.status_label)
+        self._header_layout.insertWidget(index, button)

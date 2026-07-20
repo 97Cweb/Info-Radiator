@@ -3,6 +3,8 @@ from __future__ import annotations
 from datetime import date
 from typing import Any
 
+from PySide6.QtCore import QUrl
+from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QLabel, QWidget
 
 from radiator.models import CalendarItem
@@ -23,6 +25,12 @@ class CalendarSection(DataSection):
             parent=parent,
         )
         self.source = source
+
+        self.add_header_button(
+            text="+",
+            callback=self._create_event,
+            tooltip="Create event",
+        )
 
     def fetch(self) -> list[CalendarItem]:
         return self.source.get_upcoming_events(
@@ -53,6 +61,11 @@ class CalendarSection(DataSection):
                 self.add_item(heading)
 
             self.add_item(CalendarCard(event))
+
+    def _create_event(self) -> None:
+        QDesktopServices.openUrl(
+            QUrl("https://calendar.google.com/calendar/render?action=TEMPLATE")
+        )
 
     @staticmethod
     def _day_heading(event_date: date) -> str:

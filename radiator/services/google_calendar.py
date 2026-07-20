@@ -1,62 +1,19 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
-from pathlib import Path
 
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 from radiator.models import CalendarItem
-
-
-SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
-
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-CREDENTIALS_PATH = PROJECT_ROOT / "credentials.json"
-TOKEN_PATH = PROJECT_ROOT / "token.json"
+from radiator.services.google_auth import (
+    GoogleAuthError,
+    get_google_credentials,
+)
 
 
 class GoogleCalendarError(RuntimeError):
     """Raised when calendar data cannot be loaded."""
-
-
-def get_credentials() -> Credentials:
-    credentials: Credentials | None = None
-
-    if TOKEN_PATH.exists():
-        credentials = Credentials.from_authorized_user_file(
-            str(TOKEN_PATH),
-            SCOPES,
-        )
-
-    if credentials and credentials.expired and credentials.refresh_token:
-        credentials.refresh(Request())
-
-    if not credentials or not credentials.valid:
-        if not CREDENTIALS_PATH.exists():
-            raise GoogleCalendarError(
-                f"Google credentials were not found at {CREDENTIALS_PATH}"
-            )
-
-        flow = InstalledAppFlow.from_client_secrets_file(
-            str(CREDENTIALS_PATH),
-            SCOPES,
-        )
-
-        credentials = flow.run_local_server(
-            port=0,
-            open_browser=True,
-        )
-
-    TOKEN_PATH.write_text(
-        credentials.to_json(),
-        encoding="utf-8",
-    )
-
-    return credentials
 
 
 def get_upcoming_events(
@@ -64,7 +21,7 @@ def get_upcoming_events(
     days_ahead: int = 7,
 ) -> list[CalendarItem]:
     try:
-        credentials = get_credentials()
+        credentials = get_google_credentials()
 
         service = build(
             "calendar",

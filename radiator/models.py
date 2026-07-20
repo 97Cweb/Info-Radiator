@@ -16,11 +16,14 @@ class CalendarItem:
 
 @dataclass(slots=True)
 class TaskItem:
-    task_id: str
+    id: str
     title: str
     due: datetime | None = None
-    completed: bool = False
+    notes: str | None = None
     url: str | None = None
+    completed: bool = False
+    task_list_id: str | None = None
+    parent_id: str | None = None
 
 
 @dataclass(slots=True)

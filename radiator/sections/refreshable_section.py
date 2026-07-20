@@ -163,7 +163,7 @@ class DataSection(SectionWidget):
 
         # Keep previously displayed data after the first successful refresh.
         if not self._has_loaded_once:
-            self.show_status("Could not refresh data")
+            self.show_message("Could not refresh data")
 
     @Slot()
     def _refresh_finished(self) -> None:

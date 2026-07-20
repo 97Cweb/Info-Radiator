@@ -16,18 +16,16 @@ from PySide6.QtWidgets import (
     QMessageBox,
 )
 
-from radiator.sample_data import (
-    sample_emails,
-    sample_tasks,
-)
+from radiator.sample_data import sample_emails
 
 from radiator.sources.google_calendar_source import GoogleCalendarSource
-from radiator.sections.calendar_section import CalendarSection
+from radiator.sources.google_task_source import GoogleTaskSource
 
+from radiator.sections.calendar_section import CalendarSection
+from radiator.sections.task_section import TaskSection
 
 from radiator.widgets.email_card import EmailCard
 from radiator.widgets.section import SectionWidget
-from radiator.widgets.task_card import TaskCard
 
 
 class RadiatorWindow(QMainWindow):
@@ -44,7 +42,6 @@ class RadiatorWindow(QMainWindow):
         self._build_ui()
         self._apply_styles()
         self._start_clock()
-        self.refresh_data()
 
     def _build_ui(self) -> None:
         scroll_area = QScrollArea()
@@ -63,7 +60,10 @@ class RadiatorWindow(QMainWindow):
 
         calendar_source = GoogleCalendarSource()
         self.calendar_section = CalendarSection(source=calendar_source)
-        self.task_section = SectionWidget("TASKS")
+
+        task_source = GoogleTaskSource()
+        self.task_section = TaskSection(task_source)
+
         self.email_section = SectionWidget("EMAIL")
 
         self.content_layout.addWidget(self.calendar_section)
@@ -75,6 +75,7 @@ class RadiatorWindow(QMainWindow):
         self.setCentralWidget(scroll_area)
 
         self.calendar_section.start_auto_refresh(immediate=True)
+        self.task_section.start_auto_refresh(immediate=True)
 
     def _build_header(self) -> None:
         header = QFrame()
@@ -119,7 +120,8 @@ class RadiatorWindow(QMainWindow):
         self.clock_label.setText(now.strftime("%A, %B %-d  •  %-I:%M %p"))
 
     def refresh_data(self) -> None:
-        self._load_tasks()
+        self.calendar_section.refresh()
+        self.task_section.refresh()
         self._load_email()
 
     def _calendar_day_heading(self, event_date: date) -> str:
@@ -140,28 +142,11 @@ class RadiatorWindow(QMainWindow):
 
         return event_date.strftime("%A, %B %-d").upper()
 
-    def _load_tasks(self) -> None:
-        self.task_section.clear_items()
-
-        for item in sample_tasks():
-            card = TaskCard(item)
-            card.completion_changed.connect(self._task_completion_changed)
-            self.task_section.add_item(card)
-
     def _load_email(self) -> None:
         self.email_section.clear_items()
 
         for item in sample_emails():
             self.email_section.add_item(EmailCard(item))
-
-    def _task_completion_changed(
-        self,
-        task_id: str,
-        completed: bool,
-    ) -> None:
-        # Temporary behaviour. Later this will call the Google Tasks
-        # service and then refresh the task list.
-        print(f"Task {task_id}: completed={completed}")
 
     def _apply_styles(self) -> None:
         self.setStyleSheet(
@@ -294,8 +279,22 @@ class RadiatorWindow(QMainWindow):
                 border-radius: 4px;
             }
 
+            QFrame#taskCard {
+                background-color: #20252a;
+                border-radius: 6px;
+            }
+
+            QFrame#taskCard:hover {
+                background-color: #292f35;
+            }
+
+            QLabel#taskTitle {
+                font-size: 12px;
+                font-weight: 600;
+            }
+
             QCheckBox {
-                spacing: 4px;
+                spacing: 0px;
             }
 
             QCheckBox::indicator {
@@ -319,5 +318,24 @@ class RadiatorWindow(QMainWindow):
             QScrollBar::sub-line:vertical {
                 height: 0;
             }
-            """
+
+            QPushButton#sectionActionButton {
+                background: transparent;
+                border: none;
+                color: #bbc3c9;
+                font-size: 18px;
+                font-weight: 600;
+                padding: 0px 5px;
+            }
+
+            QPushButton#sectionActionButton:hover {
+                background: #343a40;
+                border-radius: 4px;
+            }
+
+            QLabel#subtaskMarker {
+                color: #69747c;
+                font-size: 13px;
+            }
+        """
         )
