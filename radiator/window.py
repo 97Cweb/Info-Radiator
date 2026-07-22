@@ -34,8 +34,8 @@ class RadiatorWindow(QMainWindow):
 
         # Good development size for the long 480×1920 display.
         # The operating system can rotate the monitor vertically.
-        self.resize(480, 960)
-        self.setMinimumWidth(340)
+        self.resize(220, 960)
+        self.setMinimumWidth(220)
 
         self._build_ui()
         self._apply_styles()
@@ -137,193 +137,193 @@ class RadiatorWindow(QMainWindow):
         return event_date.strftime("%A, %B %-d").upper()
 
     def _apply_styles(self) -> None:
-        self.setStyleSheet(
-            """
-            QMainWindow {
-                background: #151719;
-            }
+      self.setStyleSheet(
+          """
+          QMainWindow {
+              background: #151719;
+          }
 
-            QWidget#content {
-                background: #151719;
-            }
+          QWidget#content {
+              background: #151719;
+          }
 
-            QFrame#header {
-                background: #202428;
-                border: 1px solid #30363b;
-                border-radius: 8px;
-            }
+          QFrame#header {
+              background: #202428;
+              border: 1px solid #30363b;
+              border-radius: 8px;
+          }
 
-            QLabel#appTitle {
-                color: #f1f3f4;
-                font-size: 17px;
-                font-weight: 700;
-            }
+          QLabel#appTitle {
+              color: #f1f3f4;
+              font-size: 21px;
+              font-weight: 700;
+          }
 
-            QLabel#clock {
-                color: #9ba3aa;
-                font-size: 11px;
-            }
+          QLabel#clock {
+              color: #9ba3aa;
+              font-size: 14px;
+          }
 
-            QPushButton#refreshButton {
-                background: transparent;
-                border: none;
-                color: #d7dce0;
-                font-size: 22px;
-                padding: 4px 8px;
-            }
+          QPushButton#refreshButton {
+              background: transparent;
+              border: none;
+              color: #d7dce0;
+              font-size: 25px;
+              padding: 4px 8px;
+          }
 
-            QPushButton#refreshButton:hover {
-                background: #343a40;
-                border-radius: 6px;
-            }
+          QPushButton#refreshButton:hover {
+              background: #343a40;
+              border-radius: 6px;
+          }
 
-            QFrame#section {
-                background: #1b1e21;
-                border: 1px solid #2b3035;
-                border-radius: 8px;
-            }
+          QFrame#section {
+              background: #1b1e21;
+              border: 1px solid #2b3035;
+              border-radius: 8px;
+          }
 
-            QLabel#sectionTitle {
-                color: #8e979f;
-                font-size: 11px;
-                font-weight: 700;
-                letter-spacing: 1px;
-            }
+          QLabel#sectionTitle {
+              color: #8e979f;
+              font-size: 14px;
+              font-weight: 700;
+              letter-spacing: 1px;
+          }
 
-            QLabel#sectionStatus {
-                color: #798189;
-                font-size: 10px;
-                font-weight: 600;
-            }
+          QLabel#sectionStatus {
+              color: #798189;
+              font-size: 12px;
+              font-weight: 600;
+          }
 
-            QLabel#calendarDayHeading {
-                color: #8fa5b2;
-                font-size: 10px;
-                font-weight: 700;
-                letter-spacing: 1px;
-                padding-top: 7px;
-                padding-bottom: 2px;
-                border-bottom: 1px solid #343a40;
-            }
+          QLabel#calendarDayHeading {
+              color: #8fa5b2;
+              font-size: 13px;
+              font-weight: 700;
+              letter-spacing: 1px;
+              padding-top: 7px;
+              padding-bottom: 2px;
+              border-bottom: 1px solid #343a40;
+          }
 
-            QFrame#card {
-                background: #25292d;
-                border: 1px solid #343a40;
-                border-radius: 6px;
-            }
+          QFrame#card {
+              background: #25292d;
+              border: 1px solid #343a40;
+              border-radius: 6px;
+          }
 
-            QFrame#card:hover {
-                background: #2b3035;
-                border-color: #4d565e;
-            }
+          QFrame#card:hover {
+              background: #2b3035;
+              border-color: #4d565e;
+          }
 
-            QFrame#unreadCard {
-                background: #29333a;
-                border: 1px solid #496675;
-                border-radius: 6px;
-            }
+          QFrame#unreadCard {
+              background: #29333a;
+              border: 1px solid #496675;
+              border-radius: 6px;
+          }
 
-            QFrame#unreadCard:hover {
-                background: #303d45;
-            }
+          QFrame#unreadCard:hover {
+              background: #303d45;
+          }
 
-            QLabel#cardTitle {
-                color: #eef0f2;
-                font-size: 13px;
-                font-weight: 600;
-            }
+          QLabel#cardTitle {
+              color: #eef0f2;
+              font-size: 16px;
+              font-weight: 600;
+          }
 
-            QLabel#cardTitle[completed="true"] {
-                color: #788087;
-                text-decoration: line-through;
-            }
+          QLabel#cardTitle[completed="true"] {
+              color: #788087;
+              text-decoration: line-through;
+          }
 
-            QLabel#secondaryText {
-                color: #a3abb2;
-                font-size: 11px;
-            }
+          QLabel#secondaryText {
+              color: #a3abb2;
+              font-size: 14px;
+          }
 
-            QLabel#emailSender {
-                color: #c8d0d6;
-                font-size: 11px;
-                font-weight: 700;
-            }
+          QLabel#emailSender {
+              color: #c8d0d6;
+              font-size: 14px;
+              font-weight: 700;
+          }
 
-            QLabel#timestamp {
-                color: #798189;
-                font-size: 10px;
-            }
+          QLabel#timestamp {
+              color: #798189;
+              font-size: 12px;
+          }
 
-            QPushButton#iconButton {
-                background: transparent;
-                border: none;
-                color: #bbc3c9;
-                font-size: 17px;
-                padding: 4px;
-            }
+          QPushButton#iconButton {
+              background: transparent;
+              border: none;
+              color: #bbc3c9;
+              font-size: 20px;
+              padding: 4px;
+          }
 
-            QPushButton#iconButton:hover {
-                background: #3a4147;
-                border-radius: 4px;
-            }
+          QPushButton#iconButton:hover {
+              background: #3a4147;
+              border-radius: 4px;
+          }
 
-            QFrame#taskCard {
-                background-color: #20252a;
-                border-radius: 6px;
-            }
+          QFrame#taskCard {
+              background-color: #20252a;
+              border-radius: 6px;
+          }
 
-            QFrame#taskCard:hover {
-                background-color: #292f35;
-            }
+          QFrame#taskCard:hover {
+              background-color: #292f35;
+          }
 
-            QLabel#taskTitle {
-                font-size: 12px;
-                font-weight: 600;
-            }
+          QLabel#taskTitle {
+              font-size: 15px;
+              font-weight: 600;
+          }
 
-            QCheckBox {
-                spacing: 0px;
-            }
+          QCheckBox {
+              spacing: 2px;
+          }
 
-            QCheckBox::indicator {
-                width: 17px;
-                height: 17px;
-            }
+          QCheckBox::indicator {
+              width: 20px;
+              height: 20px;
+          }
 
-            QScrollBar:vertical {
-                background: transparent;
-                width: 6px;
-                margin: 2px;
-            }
+          QScrollBar:vertical {
+              background: transparent;
+              width: 8px;
+              margin: 2px;
+          }
 
-            QScrollBar::handle:vertical {
-                background: #4a5157;
-                border-radius: 3px;
-                min-height: 30px;
-            }
+          QScrollBar::handle:vertical {
+              background: #4a5157;
+              border-radius: 4px;
+              min-height: 30px;
+          }
 
-            QScrollBar::add-line:vertical,
-            QScrollBar::sub-line:vertical {
-                height: 0;
-            }
+          QScrollBar::add-line:vertical,
+          QScrollBar::sub-line:vertical {
+              height: 0;
+          }
 
-            QPushButton#sectionActionButton {
-                background: transparent;
-                border: none;
-                color: #bbc3c9;
-                font-size: 18px;
-                font-weight: 600;
-                padding: 0px 5px;
-            }
+          QPushButton#sectionActionButton {
+              background: transparent;
+              border: none;
+              color: #bbc3c9;
+              font-size: 21px;
+              font-weight: 600;
+              padding: 0px 5px;
+          }
 
-            QPushButton#sectionActionButton:hover {
-                background: #343a40;
-                border-radius: 4px;
-            }
+          QPushButton#sectionActionButton:hover {
+              background: #343a40;
+              border-radius: 4px;
+          }
 
-            QLabel#subtaskMarker {
-                color: #69747c;
-                font-size: 13px;
-            }
-        """
-        )
+          QLabel#subtaskMarker {
+              color: #69747c;
+              font-size: 16px;
+          }
+          """
+      )
