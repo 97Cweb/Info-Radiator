@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from datetime import date, datetime, timedelta
 
-from PySide6.QtCore import QTimer, Qt
+from PySide6.QtCore import QEvent, QTimer, Qt
+from PySide6.QtGui import QCloseEvent, QGuiApplication, QScreen
+
 from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
@@ -29,13 +31,18 @@ from radiator.sections.email_section import EmailSection
 class RadiatorWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
-
         self.setWindowTitle("Info Radiator")
 
-        # Good development size for the long 480×1920 display.
-        # The operating system can rotate the monitor vertically.
-        self.resize(220, 960)
-        self.setMinimumWidth(220)
+        self._allow_close = False
+        self._target_screen: QScreen | None = None
+
+        # Frameless removes the title bar and resize handles.
+        #
+        # Tool keeps the Radiator out of the normal taskbar while still allowing
+        # it to exist as an ordinary top-level window.
+        self.setWindowFlags(Qt.WindowType.Tool | Qt.WindowType.FramelessWindowHint)
+
+        self.setMinimumSize(1, 1)
 
         self._build_ui()
         self._apply_styles()
@@ -137,8 +144,8 @@ class RadiatorWindow(QMainWindow):
         return event_date.strftime("%A, %B %-d").upper()
 
     def _apply_styles(self) -> None:
-      self.setStyleSheet(
-          """
+        self.setStyleSheet(
+            """
           QMainWindow {
               background: #151719;
           }
@@ -326,4 +333,110 @@ class RadiatorWindow(QMainWindow):
               font-size: 16px;
           }
           """
-      )
+        )
+
+    def _find_radiator_screen(self) -> QScreen:
+        """
+        Locate the narrow portrait display intended for the Info Radiator.
+
+        Preferred match:
+            - portrait orientation
+            - approximately 480 × 1920 pixels
+
+        Fallback:
+            - narrowest non-primary display
+            - primary display if no other display exists
+        """
+        screens = QGuiApplication.screens()
+
+        if not screens:
+            primary = QGuiApplication.primaryScreen()
+            if primary is None:
+                raise RuntimeError("Qt could not find any displays.")
+            return primary
+
+        def screen_score(screen: QScreen) -> tuple[int, int, int]:
+            geometry = screen.geometry()
+            width = geometry.width()
+            height = geometry.height()
+
+            portrait_penalty = 0 if height > width else 1
+
+            # The physical display is 480 × 1920, but desktop scaling or
+            # rotation can produce slightly different logical dimensions.
+            target_difference = abs(width - 480) + abs(height - 1920)
+
+            primary_penalty = 1 if screen is QGuiApplication.primaryScreen() else 0
+
+            return (
+                portrait_penalty,
+                target_difference,
+                primary_penalty,
+            )
+
+        selected = min(screens, key=screen_score)
+
+        geometry = selected.geometry()
+        print(
+            "Info Radiator display:",
+            selected.name(),
+            f"{geometry.width()}x{geometry.height()}",
+            f"at {geometry.x()},{geometry.y()}",
+        )
+
+        return selected
+
+    def move_to_radiator_screen(self) -> None:
+        """
+        Move and resize the window to cover the target monitor.
+        """
+        screen = self._find_radiator_screen()
+        geometry = screen.geometry()
+
+        self._target_screen = screen
+        self.setScreen(screen)
+        self.setGeometry(geometry)
+
+    def show_radiator(self) -> None:
+        """
+        Place the Radiator on its display and show it.
+        """
+        self.move_to_radiator_screen()
+        self.show()
+
+        # Some Linux window managers adjust a newly shown Tool window.
+        # Apply the geometry again after it has become visible.
+        QTimer.singleShot(100, self.move_to_radiator_screen)
+
+        self.raise_()
+        self.activateWindow()
+
+    def allow_close(self) -> None:
+        """
+        Allow the real application Quit command to close the window.
+        """
+        self._allow_close = True
+
+    def closeEvent(self, event: QCloseEvent) -> None:
+        """
+        Closing the window normally hides it to the system tray.
+
+        The tray menu's Quit command calls allow_close() first.
+        """
+        if self._allow_close:
+            event.accept()
+            return
+
+        event.ignore()
+        self.hide()
+
+    def keyPressEvent(self, event) -> None:
+        """
+        Escape hides the Radiator without terminating it.
+        """
+        if event.key() == Qt.Key.Key_Escape:
+            self.hide()
+            event.accept()
+            return
+
+        super().keyPressEvent(event)
